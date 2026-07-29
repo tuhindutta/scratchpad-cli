@@ -2,44 +2,27 @@ package apirequests
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
-type IngestPayload struct {
-	UserId   string `json:"user_id"`
-	ThreadID string `json:"thread_id"`
-}
-
-// Ingest streams lines from the server via a channel, yielding values like a Python generator.
-func Ingest(url string, user_id string, thread_id string) (<-chan string, <-chan error) {
+// ListThreads streams lines from the server via a channel, yielding values like a Python generator.
+func ListThreads(url string, user_id string, thread_id string) (<-chan string, <-chan error) {
 	out := make(chan string)
 	errChan := make(chan error, 1) // Buffered to prevent leaking goroutine on exit
 
 	go func() {
-		// Ensure channels close when the stream finishes
+		// Ensure channels close when the stream finishes or encounters an error
 		defer close(out)
 		defer close(errChan)
 
-		payload := IngestPayload{
-			UserId:   user_id,
-			ThreadID: thread_id,
-		}
-
-		body, err := json.Marshal(payload)
-		if err != nil {
-			errChan <- fmt.Errorf("Unable to marshal the payload: %w", err)
-			return
-		}
-
-		req, err := http.NewRequest(http.MethodPost, url+"/rag/ingest", bytes.NewBuffer(body))
+		req, err := http.NewRequest(http.MethodGet, url+"/assistant/chats/list", nil)
 		if err != nil {
 			errChan <- fmt.Errorf("Unable to create http request: %w", err)
 			return
 		}
-		req.Header.Set("Content-Type", "application/json")
+		// Expecting JSON payload back from the server
+		req.Header.Set("Accept", "application/json")
 
 		client := &http.Client{}
 		resp, err := client.Do(req)
