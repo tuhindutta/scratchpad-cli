@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
@@ -34,8 +33,6 @@ func main() {
 		userId = cred.UserID
 		threadId = cred.ThreadID
 	}
-
-	fmt.Println(userId, "  ", threadId)
 
 	app := cli.App{
 		Url:            "http://0.0.0.0",

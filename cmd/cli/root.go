@@ -73,10 +73,35 @@ func ListThreadsCmd(url string, port int) *cobra.Command {
 	var command = &cobra.Command{
 		Use:   "lt",
 		Short: "List conversation threads.",
-		Run: func(cmd *cobra.Command, args []string) {
+		// Run: func(cmd *cobra.Command, args []string) {
 
-			api_url := fmt.Sprintf("%s:%d", url, port)
-			apirequests.ListThreads(api_url)
+		// 	api_url := fmt.Sprintf("%s:%d", url, port)
+		// 	apirequests.ListThreads(api_url)
+		// },
+		Run: func(cmd *cobra.Command, args []string) {
+			apiURL := fmt.Sprintf("%s:%d", url, port)
+
+			out, errChan := apirequests.ListThreads(apiURL)
+
+			for out != nil || errChan != nil {
+				select {
+				case msg, ok := <-out:
+					if !ok {
+						out = nil
+						continue
+					}
+					fmt.Print(msg)
+
+				case err, ok := <-errChan:
+					if !ok {
+						errChan = nil
+						continue
+					}
+					if err != nil {
+						fmt.Println("Error:", err)
+					}
+				}
+			}
 		},
 	}
 
@@ -117,9 +142,34 @@ func AssistantCmd(url string, port int, userId string, threadId string) *cobra.C
 		Short: "Delete all conversation threads.",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
+			apiURL := fmt.Sprintf("%s:%d", url, port)
 
-			api_url := fmt.Sprintf("%s:%d", url, port)
-			apirequests.Assistant(api_url, userId, threadId, args[0])
+			out, errChan := apirequests.Assistant(
+				apiURL,
+				userId,
+				threadId,
+				args[0],
+			)
+
+			for out != nil || errChan != nil {
+				select {
+				case msg, ok := <-out:
+					if !ok {
+						out = nil
+						continue
+					}
+					fmt.Print(msg)
+
+				case err, ok := <-errChan:
+					if !ok {
+						errChan = nil
+						continue
+					}
+					if err != nil {
+						fmt.Println("Error:", err)
+					}
+				}
+			}
 		},
 	}
 
