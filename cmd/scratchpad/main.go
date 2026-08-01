@@ -3,31 +3,26 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/tuhindutta/scratchpad-cli/internals/backend"
+	"github.com/tuhindutta/scratchpad-cli/cmd/cmd"
 )
 
 func main() {
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	be := backend.Backend{
-		AgentModel:      os.Getenv("AGENT_MODEL"),
-		RagModel:        os.Getenv("RAG_MODEL"),
-		OpenaiApiKey:    os.Getenv("OPENAI_API_KEY"),
-		GoogleApiKey:    os.Getenv("GOOGLE_API_KEY"),
-		FirecrawlApiKey: os.Getenv("FIRECRAWL_API_KEY"),
-		WorkDir:         os.Getenv("WORK_DIR"),
-	}
-
-	be.Start(8081)
-
-	time.Sleep(30 * time.Second)
-
-	be.Stop()
+	cmd.Execute(os.Getenv("URL"), 8081)
 }
+
+// prompts, errs := apirequests.Assistant("http://localhost:8081", "u1", "t1", "Hello!")
+
+// for prompt := range prompts {
+// 	fmt.Print(prompt)
+// }
+
+// if err := <-errs; err != nil {
+// 	log.Fatalf("Assistant stream failed: %v", err)
+// }

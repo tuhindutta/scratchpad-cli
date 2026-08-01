@@ -7,7 +7,7 @@ import (
 )
 
 // ListThreads streams lines from the server via a channel, yielding values like a Python generator.
-func ListThreads(url string, user_id string, thread_id string) (<-chan string, <-chan error) {
+func ListThreads(url string) (<-chan string, <-chan error) {
 	out := make(chan string)
 	errChan := make(chan error, 1) // Buffered to prevent leaking goroutine on exit
 
