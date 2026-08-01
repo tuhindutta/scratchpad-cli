@@ -8,90 +8,150 @@ import (
 	apirequests "github.com/tuhindutta/scratchpad-cli/internals/apiRequests"
 )
 
-// const pidFile = "/tmp/scratchpad-cli.pid"
-// const defaultPort = 8081
-
 var rootCmd = &cobra.Command{
 	Use:   "scp",
 	Short: "Personal Assistant",
 	Long:  `An AI personal assistant for day to day life help and research.`,
 }
 
+func SetUserThreadIDsCmd(userId string, threadID string, credentialPath string) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "cred arg[1] arg[1]",
+		Short: "Ser user and thread IDs",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			SetUserThreadIDs(args[0], args[1], credentialPath)
+		},
+	}
+
+	return command
+}
+
 func InitCmd(port int) *cobra.Command {
-	var initCmd = &cobra.Command{
+	var command = &cobra.Command{
 		Use:   "init",
 		Short: "Initialize and start the service.",
 		Run: func(cmd *cobra.Command, args []string) {
-			// 1. Save the current process ID so 'stop' can find it later
-			// pid := os.Getpid()
-			// _ = os.WriteFile(pidFile, []byte(strconv.Itoa(pid)), 0644)
 			srv := Server{Port: port}
 			fmt.Printf("Starting assistant server")
 			srv.Start()
 		},
 	}
 
-	return initCmd
+	return command
 }
 
-// func StopServer() {
-// 	// s.Backend.Stop()
-// 	url := fmt.Sprintf("%s:%d", s.Url, s.Port)
-// 	apirequests.Shutdown(url)
-// }
-
 func StopCmd(url string, port int) *cobra.Command {
-	var stopCmd = &cobra.Command{
+	var command = &cobra.Command{
 		Use:   "stop",
 		Short: "Stop the running service.",
 		Run: func(cmd *cobra.Command, args []string) {
 
 			api_url := fmt.Sprintf("%s:%d", url, port)
 			apirequests.Shutdown(api_url)
-			// 1. Read the saved process ID from disk
-			// data, err := os.ReadFile(pidFile)
-			// if err != nil {
-			// 	fmt.Println("Error: Service does not appear to be running.")
-			// 	return
-			// }
-
-			// pid, _ := strconv.Atoi(string(data))
-
-			// // 2. Find the operating system process and kill it
-			// process, err := os.FindProcess(pid)
-			// if err != nil {
-			// 	fmt.Printf("Failed to find process with PID %d\n", pid)
-			// 	return
-			// }
-
-			// fmt.Printf("Stopping assistant server (PID: %d)...\n", pid)
-			// err = process.Signal(syscall.SIGTERM) // Clean shutdown signal
-			// if err != nil {
-			// 	fmt.Println("Failed to kill process:", err)
-			// 	return
-			// }
-
-			// // 3. Clean up the PID file
-			// _ = os.Remove(pidFile)
-			// fmt.Println("Server stopped successfully.")
 		},
 	}
 
-	return stopCmd
+	return command
+}
+
+func IngestCmd(url string, port int, userId string, threadId string) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "ingest",
+		Short: "Ingest external provided knowledge in .pdf and .txt formats.",
+		Run: func(cmd *cobra.Command, args []string) {
+
+			api_url := fmt.Sprintf("%s:%d", url, port)
+			apirequests.Ingest(api_url, userId, threadId)
+		},
+	}
+
+	return command
+}
+
+func ListThreadsCmd(url string, port int) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "lt",
+		Short: "List conversation threads.",
+		Run: func(cmd *cobra.Command, args []string) {
+
+			api_url := fmt.Sprintf("%s:%d", url, port)
+			apirequests.ListThreads(api_url)
+		},
+	}
+
+	return command
+}
+
+func DeleteThreadCmd(url string, port int, threadId string) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "dt",
+		Short: "Delete conversation thread.",
+		Run: func(cmd *cobra.Command, args []string) {
+
+			api_url := fmt.Sprintf("%s:%d", url, port)
+			apirequests.DeleteChatThread(api_url, threadId)
+		},
+	}
+
+	return command
+}
+
+func DeleteFullChatCmd(url string, port int) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "dc",
+		Short: "Delete all conversation threads.",
+		Run: func(cmd *cobra.Command, args []string) {
+
+			api_url := fmt.Sprintf("%s:%d", url, port)
+			apirequests.DeleteFullChatHistory(api_url)
+		},
+	}
+
+	return command
+}
+
+func AssistantCmd(url string, port int, userId string, threadId string) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "a [arg1]",
+		Short: "Delete all conversation threads.",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+
+			api_url := fmt.Sprintf("%s:%d", url, port)
+			apirequests.Assistant(api_url, userId, threadId, args[0])
+		},
+	}
+
+	return command
 }
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the application version",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("mycliapp v1.0.0")
+		fmt.Println("scratchpad v1.0.0")
 	},
 }
 
-func Execute(url string, port int) {
+type App struct {
+	Url            string
+	Port           int
+	UserId         string
+	ThreadId       string
+	CredentialPath string
+}
 
-	rootCmd.AddCommand(InitCmd(port))
-	rootCmd.AddCommand(StopCmd(url, port))
+func (a App) Execute() {
+
+	rootCmd.AddCommand(SetUserThreadIDsCmd(a.UserId, a.ThreadId, a.CredentialPath))
+	rootCmd.AddCommand(InitCmd(a.Port))
+	rootCmd.AddCommand(StopCmd(a.Url, a.Port))
+	rootCmd.AddCommand(IngestCmd(a.Url, a.Port, a.UserId, a.ThreadId))
+	rootCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))
+	rootCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port, a.ThreadId))
+	rootCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
+	rootCmd.AddCommand(AssistantCmd(a.Url, a.Port, a.UserId, a.ThreadId))
 	rootCmd.AddCommand(versionCmd)
 
 	if err := rootCmd.Execute(); err != nil {

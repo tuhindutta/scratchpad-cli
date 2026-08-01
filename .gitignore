@@ -3,6 +3,7 @@
 
 /agent_work/
 /backend/
+credentials
 
 ### dotenv ###
 .env
