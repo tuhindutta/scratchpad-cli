@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/tuhindutta/scratchpad-cli/cmd/cmd"
+	"github.com/tuhindutta/scratchpad-cli/cmd/cli"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	cmd.Execute(os.Getenv("URL"), 8081)
+	cli.Execute(os.Getenv("URL"), 8081)
 }
 
 // prompts, errs := apirequests.Assistant("http://localhost:8081", "u1", "t1", "Hello!")
