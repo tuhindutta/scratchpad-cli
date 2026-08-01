@@ -60,10 +60,36 @@ func IngestCmd(url string, port int, userId string, threadId string) *cobra.Comm
 	var command = &cobra.Command{
 		Use:   "ingest",
 		Short: "Ingest external provided knowledge in .pdf and .txt formats.",
-		Run: func(cmd *cobra.Command, args []string) {
+		// Run: func(cmd *cobra.Command, args []string) {
 
-			api_url := fmt.Sprintf("%s:%d", url, port)
-			apirequests.Ingest(api_url, userId, threadId)
+		// 	api_url := fmt.Sprintf("%s:%d", url, port)
+		// 	apirequests.Ingest(api_url, userId, threadId)
+		// },
+
+		Run: func(cmd *cobra.Command, args []string) {
+			apiURL := fmt.Sprintf("%s:%d", url, port)
+
+			out, errChan := apirequests.Ingest(apiURL, userId, threadId)
+
+			for out != nil || errChan != nil {
+				select {
+				case msg, ok := <-out:
+					if !ok {
+						out = nil
+						continue
+					}
+					fmt.Print(msg)
+
+				case err, ok := <-errChan:
+					if !ok {
+						errChan = nil
+						continue
+					}
+					if err != nil {
+						fmt.Println("Error:", err)
+					}
+				}
+			}
 		},
 	}
 
@@ -74,11 +100,6 @@ func ListThreadsCmd(url string, port int) *cobra.Command {
 	var command = &cobra.Command{
 		Use:   "lt",
 		Short: "List conversation threads.",
-		// Run: func(cmd *cobra.Command, args []string) {
-
-		// 	api_url := fmt.Sprintf("%s:%d", url, port)
-		// 	apirequests.ListThreads(api_url)
-		// },
 		Run: func(cmd *cobra.Command, args []string) {
 			apiURL := fmt.Sprintf("%s:%d", url, port)
 
@@ -109,14 +130,15 @@ func ListThreadsCmd(url string, port int) *cobra.Command {
 	return command
 }
 
-func DeleteThreadCmd(url string, port int, threadId string) *cobra.Command {
+func DeleteThreadCmd(url string, port int) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "dt",
+		Use:   "dt [arg1]",
 		Short: "Delete conversation thread.",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 
 			api_url := fmt.Sprintf("%s:%d", url, port)
-			apirequests.DeleteChatThread(api_url, threadId)
+			apirequests.DeleteChatThread(api_url, args[0])
 		},
 	}
 
@@ -203,7 +225,7 @@ func (a App) Execute() {
 	rootCmd.AddCommand(StopCmd(a.Url, a.Port))
 	rootCmd.AddCommand(IngestCmd(a.Url, a.Port, a.UserId, a.ThreadId))
 	rootCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))
-	rootCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port, a.ThreadId))
+	rootCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port))
 	rootCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
 	rootCmd.AddCommand(AssistantCmd(a.Url, a.Port, a.UserId, a.ThreadId))
 	rootCmd.AddCommand(versionCmd)
