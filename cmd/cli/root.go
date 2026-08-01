@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	apirequests "github.com/tuhindutta/scratchpad-cli/internals/apiRequests"
@@ -138,17 +139,20 @@ func DeleteFullChatCmd(url string, port int) *cobra.Command {
 
 func AssistantCmd(url string, port int, userId string, threadId string) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "a [arg1]",
-		Short: "Delete all conversation threads.",
-		Args:  cobra.ExactArgs(1),
+		Use:   "a <userMessage>",
+		Short: "Assistant chat.",
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			apiURL := fmt.Sprintf("%s:%d", url, port)
+			prompt := strings.Join(args, " ")
+
+			fmt.Println(prompt)
 
 			out, errChan := apirequests.Assistant(
 				apiURL,
 				userId,
 				threadId,
-				args[0],
+				prompt,
 			)
 
 			for out != nil || errChan != nil {
