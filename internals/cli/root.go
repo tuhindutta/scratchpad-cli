@@ -18,9 +18,10 @@ var rootCmd = &cobra.Command{
 
 func SetUserThreadIDsPortCmd(credentialPath string) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "cred arg[1] arg[2]",
-		Short: "Ser user and thread IDs",
-		Args:  cobra.ExactArgs(2),
+		Use:     "credentials arg[1] arg[2]",
+		Aliases: []string{"cred"},
+		Short:   "Alias: cred | Set user and thread IDs",
+		Args:    cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			cliCreds.SetUserThreadIDsPort(args[0], args[1], credentialPath)
 		},
@@ -59,8 +60,9 @@ func StopCmd(url string, port int) *cobra.Command {
 
 func IngestCmd(url string, port int, userId string, threadId string) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "ingest",
-		Short: "Ingest external provided knowledge in .pdf and .txt formats.",
+		Use:     "knowledge",
+		Aliases: []string{"ingest"},
+		Short:   "Ingest external provided knowledge in .pdf and .txt formats.",
 		// Run: func(cmd *cobra.Command, args []string) {
 
 		// 	api_url := fmt.Sprintf("%s:%d", url, port)
@@ -97,9 +99,14 @@ func IngestCmd(url string, port int, userId string, threadId string) *cobra.Comm
 	return command
 }
 
+var threadCmd = &cobra.Command{
+	Use:   "thread",
+	Short: "Manage conversation threads",
+}
+
 func ListThreadsCmd(url string, port int) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "lt",
+		Use:   "list",
 		Short: "List conversation threads.",
 		Run: func(cmd *cobra.Command, args []string) {
 			apiURL := fmt.Sprintf("%s:%d", url, port)
@@ -133,7 +140,7 @@ func ListThreadsCmd(url string, port int) *cobra.Command {
 
 func DeleteThreadCmd(url string, port int) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "dt [arg1]",
+		Use:   "delete [arg1]",
 		Short: "Delete conversation thread.",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
@@ -148,7 +155,7 @@ func DeleteThreadCmd(url string, port int) *cobra.Command {
 
 func DeleteFullChatCmd(url string, port int) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "dc",
+		Use:   "clear",
 		Short: "Delete all conversation threads.",
 		Run: func(cmd *cobra.Command, args []string) {
 
@@ -162,9 +169,10 @@ func DeleteFullChatCmd(url string, port int) *cobra.Command {
 
 func AssistantCmd(url string, port int, userId string, threadId string) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "a <userMessage>",
-		Short: "Assistant chat.",
-		Args:  cobra.MinimumNArgs(1),
+		Use:     "chat <userMessage>",
+		Aliases: []string{"c"},
+		Short:   "Assistant chat.",
+		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			apiURL := fmt.Sprintf("%s:%d", url, port)
 			prompt := strings.Join(args, " ")
@@ -204,8 +212,9 @@ func AssistantCmd(url string, port int, userId string, threadId string) *cobra.C
 }
 
 var versionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Print the application version",
+	Use:     "version",
+	Aliases: []string{"v"},
+	Short:   "Print the application version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("scratchpad v1.0.0")
 	},
@@ -229,13 +238,18 @@ type App struct {
 
 func (a App) Execute() {
 
+	threadCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))
+	threadCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port))
+	threadCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
+
 	rootCmd.AddCommand(SetUserThreadIDsPortCmd(a.CredentialPath))
 	rootCmd.AddCommand(StartCmd(a.Port))
 	rootCmd.AddCommand(StopCmd(a.Url, a.Port))
 	rootCmd.AddCommand(IngestCmd(a.Url, a.Port, a.UserId, a.ThreadId))
-	rootCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))
-	rootCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port))
-	rootCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
+	// rootCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))
+	// rootCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port))
+	// rootCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
+	rootCmd.AddCommand(threadCmd)
 	rootCmd.AddCommand(AssistantCmd(a.Url, a.Port, a.UserId, a.ThreadId))
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(shellCmd)
