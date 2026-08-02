@@ -211,6 +211,14 @@ var versionCmd = &cobra.Command{
 	},
 }
 
+var shellCmd = &cobra.Command{
+	Use:   "shell",
+	Short: "Start interactive shell",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return StartShell(cmd.Root())
+	},
+}
+
 type App struct {
 	Url            string
 	Port           int
@@ -230,6 +238,7 @@ func (a App) Execute() {
 	rootCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
 	rootCmd.AddCommand(AssistantCmd(a.Url, a.Port, a.UserId, a.ThreadId))
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(shellCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
