@@ -22,13 +22,6 @@ func SetUserThreadIDsPortCmd(credentialPath string) *cobra.Command {
 		Short: "Ser user and thread IDs",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			// passedPort := args[2]
-			// defaultPort := 8080
-			// port, err := strconv.Atoi(passedPort)
-			// if err != nil {
-			// 	log.Printf("Could not parse the passed port: %s \nDefaulting to %d", passedPort, defaultPort)
-			// 	port = defaultPort
-			// }
 			cliCreds.SetUserThreadIDsPort(args[0], args[1], credentialPath)
 		},
 	}

@@ -9,20 +9,18 @@ import (
 )
 
 func GetFreePort() (int, error) {
-	// Resolve a local TCP address on port 0
+
 	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
 	if err != nil {
 		return 0, err
 	}
 
-	// Open a temporary listener
 	listener, err := net.ListenTCP("tcp", addr)
 	if err != nil {
 		return 0, err
 	}
-	defer listener.Close() // Free it immediately so your server can use it
+	defer listener.Close()
 
-	// Return the assigned port number
 	return listener.Addr().(*net.TCPAddr).Port, nil
 }
 
