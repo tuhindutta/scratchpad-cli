@@ -1,4 +1,4 @@
-package cli
+package cliCreds
 
 import (
 	"encoding/json"

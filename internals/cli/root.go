@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	apirequests "github.com/tuhindutta/scratchpad-cli/internals/apiRequests"
+	cliCreds "github.com/tuhindutta/scratchpad-cli/internals/cli/creds"
 )
 
 var rootCmd = &cobra.Command{
@@ -21,16 +22,16 @@ func SetUserThreadIDsCmd(userId string, threadID string, credentialPath string) 
 		Short: "Ser user and thread IDs",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			SetUserThreadIDs(args[0], args[1], credentialPath)
+			cliCreds.SetUserThreadIDs(args[0], args[1], credentialPath)
 		},
 	}
 
 	return command
 }
 
-func InitCmd(port int) *cobra.Command {
+func StartCmd(port int) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "init",
+		Use:   "start",
 		Short: "Initialize and start the service.",
 		Run: func(cmd *cobra.Command, args []string) {
 			srv := Server{Port: port}
@@ -221,7 +222,7 @@ type App struct {
 func (a App) Execute() {
 
 	rootCmd.AddCommand(SetUserThreadIDsCmd(a.UserId, a.ThreadId, a.CredentialPath))
-	rootCmd.AddCommand(InitCmd(a.Port))
+	rootCmd.AddCommand(StartCmd(a.Port))
 	rootCmd.AddCommand(StopCmd(a.Url, a.Port))
 	rootCmd.AddCommand(IngestCmd(a.Url, a.Port, a.UserId, a.ThreadId))
 	rootCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))

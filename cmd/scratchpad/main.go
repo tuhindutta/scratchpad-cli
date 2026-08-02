@@ -1,12 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/tuhindutta/scratchpad-cli/cmd/cli"
+	"github.com/tuhindutta/scratchpad-cli/internals/cli"
+	cliCreds "github.com/tuhindutta/scratchpad-cli/internals/cli/creds"
 )
 
 func main() {
@@ -16,23 +16,7 @@ func main() {
 	}
 
 	credentialPath := os.Getenv("CREDENTIALS_PATH")
-	var userId string
-	var threadId string
-
-	data, err := os.ReadFile(credentialPath)
-	if err != nil {
-		log.Printf("Error credential reading file: %v \nCreating credentials.", err)
-		userId = "temporary_user001"
-		threadId = "temporary_thread001"
-	} else {
-		var cred cli.Cred
-		err = json.Unmarshal(data, &cred)
-		if err != nil {
-			log.Fatalf("Error parsing JSON: %v", err)
-		}
-		userId = cred.UserID
-		threadId = cred.ThreadID
-	}
+	userId, threadId := cliCreds.ReadUserThreadIDs(credentialPath)
 
 	app := cli.App{
 		Url:            "http://0.0.0.0",
@@ -44,13 +28,3 @@ func main() {
 
 	app.Execute()
 }
-
-// prompts, errs := apirequests.Assistant("http://localhost:8081", "u1", "t1", "Hello!")
-
-// for prompt := range prompts {
-// 	fmt.Print(prompt)
-// }
-
-// if err := <-errs; err != nil {
-// 	log.Fatalf("Assistant stream failed: %v", err)
-// }
