@@ -16,11 +16,11 @@ func main() {
 	}
 
 	credentialPath := os.Getenv("CREDENTIALS_PATH")
-	userId, threadId := cliCreds.ReadUserThreadIDs(credentialPath)
+	userId, threadId, port := cliCreds.ReadUserThreadIDsPort(credentialPath)
 
 	app := cli.App{
 		Url:            "http://0.0.0.0",
-		Port:           8081,
+		Port:           port,
 		UserId:         userId,
 		ThreadId:       threadId,
 		CredentialPath: credentialPath,

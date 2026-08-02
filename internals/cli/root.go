@@ -16,13 +16,20 @@ var rootCmd = &cobra.Command{
 	Long:  `An AI personal assistant for day to day life help and research.`,
 }
 
-func SetUserThreadIDsCmd(userId string, threadID string, credentialPath string) *cobra.Command {
+func SetUserThreadIDsPortCmd(credentialPath string) *cobra.Command {
 	var command = &cobra.Command{
-		Use:   "cred arg[1] arg[1]",
+		Use:   "cred arg[1] arg[2]",
 		Short: "Ser user and thread IDs",
 		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			cliCreds.SetUserThreadIDs(args[0], args[1], credentialPath)
+			// passedPort := args[2]
+			// defaultPort := 8080
+			// port, err := strconv.Atoi(passedPort)
+			// if err != nil {
+			// 	log.Printf("Could not parse the passed port: %s \nDefaulting to %d", passedPort, defaultPort)
+			// 	port = defaultPort
+			// }
+			cliCreds.SetUserThreadIDsPort(args[0], args[1], credentialPath)
 		},
 	}
 
@@ -221,7 +228,7 @@ type App struct {
 
 func (a App) Execute() {
 
-	rootCmd.AddCommand(SetUserThreadIDsCmd(a.UserId, a.ThreadId, a.CredentialPath))
+	rootCmd.AddCommand(SetUserThreadIDsPortCmd(a.CredentialPath))
 	rootCmd.AddCommand(StartCmd(a.Port))
 	rootCmd.AddCommand(StopCmd(a.Url, a.Port))
 	rootCmd.AddCommand(IngestCmd(a.Url, a.Port, a.UserId, a.ThreadId))
