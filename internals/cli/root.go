@@ -39,8 +39,8 @@ func SetUserThreadIDsPortCmd(app *App) *cobra.Command {
 				app.Port = port
 			} else {
 				fmt.Printf("Cannot change port while server is running.")
-				fmt.Println("")
 			}
+			fmt.Println()
 		},
 	}
 
@@ -58,6 +58,8 @@ func SetUserThreadIDsCmd(app *App) *cobra.Command {
 			cliCreds.SetUserThreadIDsPort(userId, threadId, app.CredentialPath)
 			app.UserId = userId
 			app.ThreadId = threadId
+
+			fmt.Println()
 		},
 	}
 
@@ -91,6 +93,8 @@ func StartCmd(app *App) *cobra.Command {
 			srv.Start()
 			val := true
 			app.ServerRunning = &val
+
+			fmt.Println()
 		},
 	}
 
@@ -107,6 +111,8 @@ func StopCmd(app *App) *cobra.Command {
 			apirequests.Shutdown(api_url)
 			val := false
 			app.ServerRunning = &val
+
+			fmt.Println()
 		},
 	}
 
@@ -142,7 +148,7 @@ func IngestCmd(app *App) *cobra.Command {
 					}
 				}
 			}
-			fmt.Println("")
+			fmt.Println()
 		},
 	}
 
@@ -182,7 +188,7 @@ func ListThreadsCmd(app *App) *cobra.Command {
 					}
 				}
 			}
-			fmt.Println("")
+			fmt.Println()
 		},
 	}
 
@@ -198,6 +204,8 @@ func DeleteThreadCmd(app *App) *cobra.Command {
 
 			api_url := fmt.Sprintf("%s:%d", app.Url, app.Port)
 			apirequests.DeleteChatThread(api_url, args[0])
+
+			fmt.Println()
 		},
 	}
 
@@ -212,6 +220,8 @@ func DeleteFullChatCmd(app *App) *cobra.Command {
 
 			api_url := fmt.Sprintf("%s:%d", app.Url, app.Port)
 			apirequests.DeleteFullChatHistory(api_url)
+
+			fmt.Println()
 		},
 	}
 
@@ -256,6 +266,8 @@ func AssistantCmd(app *App) *cobra.Command {
 					}
 				}
 			}
+
+			fmt.Println()
 		},
 	}
 
@@ -268,6 +280,7 @@ var versionCmd = &cobra.Command{
 	Short:   "Print the application version",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("scratchpad v1.0.0")
+		fmt.Println()
 	},
 }
 
