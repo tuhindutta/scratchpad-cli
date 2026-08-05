@@ -11,7 +11,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "scp",
+	Use:   "scratchpad",
 	Short: "Personal Assistant",
 	Long:  `An AI personal assistant for day to day life help and research.`,
 }

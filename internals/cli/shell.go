@@ -21,7 +21,7 @@ func StartShell(root *cobra.Command) error {
                                                                   
                                                                   
 ╭──────────────────────────────────────────────────────────────╮
-│             🚀 Your AI Research & Life Assistant             │
+│                 AI Research & Life Assistant                 │
 ╰──────────────────────────────────────────────────────────────╯
 
 Available Commands
@@ -35,12 +35,6 @@ Available Commands
   shell              Launch the interactive shell
   version            Show application version
   help               Show command help
-
-Thread Commands
-──────────────────────────────────────────────────────────────
-  thread list        List all conversation threads
-  thread delete      Delete a conversation thread
-  thread clear       Delete all conversation threads
 
 Tips
 ──────────────────────────────────────────────────────────────
