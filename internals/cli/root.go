@@ -69,7 +69,6 @@ func GetUserThreadIDsPortCmd(app *App) *cobra.Command {
 		Use:   "get",
 		Short: "Get user and thread IDs, port",
 		Run: func(cmd *cobra.Command, args []string) {
-			// userId, threadId, port := cliCreds.ReadUserThreadIDsPort(app.CredentialPath)
 			fmt.Printf(`
 user_id:   %s
 thread_id: %s
@@ -114,7 +113,6 @@ func StopCmd(app *App) *cobra.Command {
 	return command
 }
 
-// func IngestCmd(url string, port int, userId string, threadId string) *cobra.Command {
 func IngestCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:     "knowledge",
@@ -220,7 +218,6 @@ func DeleteFullChatCmd(app *App) *cobra.Command {
 	return command
 }
 
-// func AssistantCmd(url string, port int, userId string, threadId string) *cobra.Command {
 func AssistantCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:     "chat <userMessage>",
