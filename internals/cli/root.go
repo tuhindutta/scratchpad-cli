@@ -16,63 +16,114 @@ var rootCmd = &cobra.Command{
 	Long:  `An AI personal assistant for day to day life help and research.`,
 }
 
-func SetUserThreadIDsPortCmd(credentialPath string) *cobra.Command {
+var credCmd = &cobra.Command{
+	Use:     "credentials",
+	Aliases: []string{"cred"},
+	Short:   "Manage credentials",
+}
+
+func SetUserThreadIDsPortCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
-		Use:     "credentials arg[1] arg[2]",
-		Aliases: []string{"cred"},
-		Short:   "Alias: cred | Set user and thread IDs",
-		Args:    cobra.ExactArgs(2),
+		Use:   "set arg[1] arg[2]",
+		Short: "Set user and thread IDs, port",
+		Args:  cobra.ExactArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
-			cliCreds.SetUserThreadIDsPort(args[0], args[1], credentialPath)
+
+			if *app.ServerRunning != true {
+				userId := args[0]
+				threadId := args[1]
+				cliCreds.SetUserThreadIDsPort(userId, threadId, app.CredentialPath)
+				_, _, port := cliCreds.ReadUserThreadIDsPort(app.CredentialPath)
+				app.UserId = userId
+				app.ThreadId = threadId
+				app.Port = port
+			} else {
+				fmt.Printf("Cannot change port while server is running.")
+				fmt.Println("")
+			}
 		},
 	}
 
 	return command
 }
 
-func StartCmd(port int) *cobra.Command {
+func SetUserThreadIDsCmd(app *App) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "setUserThread arg[1] arg[2]",
+		Short: "Set user and thread IDs",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			userId := args[0]
+			threadId := args[1]
+			cliCreds.SetUserThreadIDsPort(userId, threadId, app.CredentialPath)
+			app.UserId = userId
+			app.ThreadId = threadId
+		},
+	}
+
+	return command
+}
+
+func GetUserThreadIDsPortCmd(app *App) *cobra.Command {
+	var command = &cobra.Command{
+		Use:   "get",
+		Short: "Get user and thread IDs, port",
+		Run: func(cmd *cobra.Command, args []string) {
+			// userId, threadId, port := cliCreds.ReadUserThreadIDsPort(app.CredentialPath)
+			fmt.Printf(`
+user_id:   %s
+thread_id: %s
+port:      %d
+
+`, app.UserId, app.ThreadId, app.Port)
+		},
+	}
+
+	return command
+}
+
+func StartCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:   "start",
 		Short: "Initialize and start the service.",
 		Run: func(cmd *cobra.Command, args []string) {
-			srv := Server{Port: port}
+			srv := Server{Port: app.Port}
 			fmt.Printf("Starting assistant server")
 			srv.Start()
+			val := true
+			app.ServerRunning = &val
 		},
 	}
 
 	return command
 }
 
-func StopCmd(url string, port int) *cobra.Command {
+func StopCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:   "stop",
 		Short: "Stop the running service.",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			api_url := fmt.Sprintf("%s:%d", url, port)
+			api_url := fmt.Sprintf("%s:%d", app.Url, app.Port)
 			apirequests.Shutdown(api_url)
+			val := false
+			app.ServerRunning = &val
 		},
 	}
 
 	return command
 }
 
-func IngestCmd(url string, port int, userId string, threadId string) *cobra.Command {
+// func IngestCmd(url string, port int, userId string, threadId string) *cobra.Command {
+func IngestCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:     "knowledge",
 		Aliases: []string{"ingest"},
 		Short:   "Ingest external provided knowledge in .pdf and .txt formats.",
-		// Run: func(cmd *cobra.Command, args []string) {
-
-		// 	api_url := fmt.Sprintf("%s:%d", url, port)
-		// 	apirequests.Ingest(api_url, userId, threadId)
-		// },
-
 		Run: func(cmd *cobra.Command, args []string) {
-			apiURL := fmt.Sprintf("%s:%d", url, port)
+			apiURL := fmt.Sprintf("%s:%d", app.Url, app.Port)
 
-			out, errChan := apirequests.Ingest(apiURL, userId, threadId)
+			out, errChan := apirequests.Ingest(apiURL, app.UserId, app.ThreadId)
 
 			for out != nil || errChan != nil {
 				select {
@@ -93,6 +144,7 @@ func IngestCmd(url string, port int, userId string, threadId string) *cobra.Comm
 					}
 				}
 			}
+			fmt.Println("")
 		},
 	}
 
@@ -104,12 +156,12 @@ var threadCmd = &cobra.Command{
 	Short: "Manage conversation threads",
 }
 
-func ListThreadsCmd(url string, port int) *cobra.Command {
+func ListThreadsCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:   "list",
 		Short: "List conversation threads.",
 		Run: func(cmd *cobra.Command, args []string) {
-			apiURL := fmt.Sprintf("%s:%d", url, port)
+			apiURL := fmt.Sprintf("%s:%d", app.Url, app.Port)
 
 			out, errChan := apirequests.ListThreads(apiURL)
 
@@ -132,20 +184,21 @@ func ListThreadsCmd(url string, port int) *cobra.Command {
 					}
 				}
 			}
+			fmt.Println("")
 		},
 	}
 
 	return command
 }
 
-func DeleteThreadCmd(url string, port int) *cobra.Command {
+func DeleteThreadCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:   "delete [arg1]",
 		Short: "Delete conversation thread.",
 		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 
-			api_url := fmt.Sprintf("%s:%d", url, port)
+			api_url := fmt.Sprintf("%s:%d", app.Url, app.Port)
 			apirequests.DeleteChatThread(api_url, args[0])
 		},
 	}
@@ -153,13 +206,13 @@ func DeleteThreadCmd(url string, port int) *cobra.Command {
 	return command
 }
 
-func DeleteFullChatCmd(url string, port int) *cobra.Command {
+func DeleteFullChatCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:   "clear",
 		Short: "Delete all conversation threads.",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			api_url := fmt.Sprintf("%s:%d", url, port)
+			api_url := fmt.Sprintf("%s:%d", app.Url, app.Port)
 			apirequests.DeleteFullChatHistory(api_url)
 		},
 	}
@@ -167,22 +220,23 @@ func DeleteFullChatCmd(url string, port int) *cobra.Command {
 	return command
 }
 
-func AssistantCmd(url string, port int, userId string, threadId string) *cobra.Command {
+// func AssistantCmd(url string, port int, userId string, threadId string) *cobra.Command {
+func AssistantCmd(app *App) *cobra.Command {
 	var command = &cobra.Command{
 		Use:     "chat <userMessage>",
 		Aliases: []string{"c"},
 		Short:   "Assistant chat.",
 		Args:    cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			apiURL := fmt.Sprintf("%s:%d", url, port)
+			apiURL := fmt.Sprintf("%s:%d", app.Url, app.Port)
 			prompt := strings.Join(args, " ")
 
 			fmt.Println(prompt)
 
 			out, errChan := apirequests.Assistant(
 				apiURL,
-				userId,
-				threadId,
+				app.UserId,
+				app.ThreadId,
 				prompt,
 			)
 
@@ -234,23 +288,25 @@ type App struct {
 	UserId         string
 	ThreadId       string
 	CredentialPath string
+	ServerRunning  *bool
 }
 
-func (a App) Execute() {
+func (a *App) Execute() {
 
-	threadCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))
-	threadCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port))
-	threadCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
+	threadCmd.AddCommand(ListThreadsCmd(a))
+	threadCmd.AddCommand(DeleteThreadCmd(a))
+	threadCmd.AddCommand(DeleteFullChatCmd(a))
 
-	rootCmd.AddCommand(SetUserThreadIDsPortCmd(a.CredentialPath))
-	rootCmd.AddCommand(StartCmd(a.Port))
-	rootCmd.AddCommand(StopCmd(a.Url, a.Port))
-	rootCmd.AddCommand(IngestCmd(a.Url, a.Port, a.UserId, a.ThreadId))
-	// rootCmd.AddCommand(ListThreadsCmd(a.Url, a.Port))
-	// rootCmd.AddCommand(DeleteThreadCmd(a.Url, a.Port))
-	// rootCmd.AddCommand(DeleteFullChatCmd(a.Url, a.Port))
+	credCmd.AddCommand(SetUserThreadIDsPortCmd(a))
+	credCmd.AddCommand(SetUserThreadIDsCmd(a))
+	credCmd.AddCommand(GetUserThreadIDsPortCmd(a))
+
+	rootCmd.AddCommand(credCmd)
+	rootCmd.AddCommand(StartCmd(a))
+	rootCmd.AddCommand(StopCmd(a))
+	rootCmd.AddCommand(IngestCmd(a))
 	rootCmd.AddCommand(threadCmd)
-	rootCmd.AddCommand(AssistantCmd(a.Url, a.Port, a.UserId, a.ThreadId))
+	rootCmd.AddCommand(AssistantCmd(a))
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(shellCmd)
 
